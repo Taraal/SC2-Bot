@@ -21,6 +21,16 @@ class PyAgent(base_agent.BaseAgent):
             y = random.randint(0, 83)
             return actions.FUNCTIONS.Build_Barracks_screen('now', (x,y))
 
+        if self.buildMarines(obs):
+            return actions.FUNCTIONS.Train_Marine_quick('now')
+
+        barracks = [unit for unit in obs.observation['feature_units']
+                   if unit.unit_type == units.Terran.Barracks]
+        if len(barracks) > 0:
+            barrack = random.choix(barracks)
+            return actions.Function.select_points("select_all_type", (barrack.x, barrack.y))
+
+
         workers = [unit for unit in obs.observation['feature_units']
                    if unit.unit_type == units.Terran.SCV]
         if len(workers) > 0:
@@ -42,6 +52,14 @@ class PyAgent(base_agent.BaseAgent):
             return True
 
         return False
+
+    def buildMarines(self, obs):
+        marine = self.get_units_by_type(obs, units.Terran.Marine)
+        if len(marine) <= 4:
+            if self.unit_type_is_selected(obs, units.Terran.Barracks):
+                if(actions.FUNCTIONS.Train_Marine_quick.id in obs.observation.available_actions):
+                    return True
+                return False
 
     # Check if building a supply is possible based on selected units
     def buildSupplyDepot(self, obs):
